@@ -16,6 +16,7 @@ fs.mkdir(path.join(__dirname, 'project-dist'), () => {});
 const styleStream = fs.createWriteStream(
   path.join(__dirname, 'project-dist', 'style.css'),
 );
+
 fs.readdir(
   path.join(__dirname, 'styles'),
   { withFileTypes: true },
@@ -29,6 +30,7 @@ fs.readdir(
     }
   },
 );
+
 function getData(file) {
   if (path.extname(file.name) === '.css') {
     fs.readFile(
@@ -44,6 +46,7 @@ function getData(file) {
     );
   }
 }
+
 fs.readdir(path.join(__dirname, 'components'), (error, files) => {
   error ? console.log(error) : null;
   files.forEach((file) => {
