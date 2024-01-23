@@ -11,6 +11,39 @@ template.on('data', (data) => {
   correctCode = data;
 });
 
+fs.mkdir(path.join(__dirname, 'project-dist'), () => {});
+
+const styleStream = fs.createWriteStream(
+  path.join(__dirname, 'project-dist', 'style.css'),
+);
+fs.readdir(
+  path.join(__dirname, 'styles'),
+  { withFileTypes: true },
+  (error, files) => {
+    if (error) {
+      console.log(error);
+    } else {
+      files.forEach((file) => {
+        getData(file);
+      });
+    }
+  },
+);
+function getData(file) {
+  if (path.extname(file.name) === '.css') {
+    fs.readFile(
+      path.join(__dirname, 'styles', file.name),
+      'utf-8',
+      (err, style) => {
+        if (err) {
+          console.log(err);
+        } else {
+          styleStream.write(style);
+        }
+      },
+    );
+  }
+}
 fs.readdir(path.join(__dirname, 'components'), (error, files) => {
   error ? console.log(error) : null;
   files.forEach((file) => {
@@ -23,43 +56,15 @@ fs.readdir(path.join(__dirname, 'components'), (error, files) => {
         } else {
           const tag = file.split('.')[0];
           correctCode = correctCode.replace(`{{${tag}}}`, code);
-          fs.mkdir(path.join(__dirname, 'project-dist'), () => {
-            const writeStream = fs.createWriteStream(
-              path.join(__dirname, 'project-dist', 'index.html'),
-            );
-            const styleStream = fs.createWriteStream(
-              path.join(__dirname, 'project-dist', 'style.css'),
-            );
-            writeStream.write(correctCode);
-            function getData(file) {
-              if (path.extname(file.name) === '.css') {
-                fs.readFile(
-                  path.join(__dirname, 'styles', file.name),
-                  'utf-8',
-                  (err, style) => {
-                    if (err) {
-                      console.log(err);
-                    } else {
-                      styleStream.write(style);
-                    }
-                  },
-                );
+          fs.writeFile(
+            path.join(__dirname, 'project-dist', 'index.html'),
+            correctCode,
+            (err) => {
+              if (err) {
+                console.log(err);
               }
-            }
-            fs.readdir(
-              path.join(__dirname, 'styles'),
-              { withFileTypes: true },
-              (error, files) => {
-                if (error) {
-                  console.log(error);
-                } else {
-                  files.forEach((file) => {
-                    getData(file);
-                  });
-                }
-              },
-            );
-          });
+            },
+          );
         }
       },
     );
