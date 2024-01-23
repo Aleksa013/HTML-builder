@@ -22,7 +22,6 @@ fs.readdir(path.join(__dirname, 'components'), (error, files) => {
           console.log(error);
         } else {
           const tag = file.split('.')[0];
-          console.log(tag);
           correctCode = correctCode.replace(`{{${tag}}}`, code);
           fs.mkdir(path.join(__dirname, 'project-dist'), () => {
             const writeStream = fs.createWriteStream(
@@ -67,38 +66,51 @@ fs.readdir(path.join(__dirname, 'components'), (error, files) => {
   });
 });
 
-fs.readdir(
-  path.join(__dirname, 'assets'),
-  'utf-8',
-  { withFileTypes: false },
-  { recursive: false },
-  (err, parts) => {
-    if (err) {
-      console.log(err);
-    }
-    for (const part of parts) {
-      console.log(part);
-    }
-  },
-);
-
-// function ifIsDirectory(folder) {
-//   fs.readdir(path.join(__dirname, 'assets', folder), (files) => {
-//     files.forEach((file) => getCopyDir(file));
-//   });
-// }
-
-function getCopyDir(file) {
-  fs.mkdir(path.join(__dirname, 'files-copy'), { recursive: true }, (err) => {
-    err ? console.log(err) : null;
-    fs.copyFile(
-      path.join(__dirname, 'files', file),
-      path.join(__dirname, 'files-copy', file),
-      (error) => {
+fs.readdir(path.join(__dirname, 'assets'), 'utf-8', (err, parts) => {
+  if (err) {
+    console.log(err);
+  } else {
+    parts.forEach((part) => {
+      fs.stat(path.join(__dirname, 'assets', part), (error, stats) => {
         if (error) {
           console.log(error);
+        } else {
+          if (stats.isFile()) {
+            getCopyDir(part);
+          } else {
+            ifIsDirectory(part);
+          }
         }
-      },
-    );
+      });
+    });
+  }
+});
+
+function ifIsDirectory(folder) {
+  fs.readdir(path.join(__dirname, 'assets', folder), (error, files) => {
+    if (error) {
+      console.log(error);
+    } else {
+      files.forEach((file) => getCopyDir(folder, file));
+    }
   });
+}
+
+function getCopyDir(folder, file) {
+  fs.mkdir(
+    path.join(__dirname, 'project-dist', 'assets', folder),
+    { recursive: true },
+    (err) => {
+      err ? console.log(err) : null;
+      fs.copyFile(
+        path.join(__dirname, 'assets', folder, file),
+        path.join(__dirname, 'project-dist', 'assets', folder, file),
+        (error) => {
+          if (error) {
+            console.log(error);
+          }
+        },
+      );
+    },
+  );
 }
